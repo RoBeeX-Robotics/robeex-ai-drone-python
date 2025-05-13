@@ -3,7 +3,6 @@ from robeex_ai_drone_api import RobeexAIDrone
 
 async def main():
     drone_ip = "172.168.1.128"  # Drone IP address
-    # drone_ip = "192.168.1.60"  # Drone IP address
     drone = RobeexAIDrone(drone_ip=drone_ip)  # Default port is 8585
 
     print('wait for telm ...')
