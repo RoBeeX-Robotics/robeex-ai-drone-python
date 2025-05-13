@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import Union
 import robeex_ai_drone_api
 
@@ -8,15 +8,19 @@ class RGBMode(Enum):
     MANUAL = "MANUAL"
 
 
-class MotorNumber:
+class MotorNumber(IntEnum):
     MOTOR_1 = 1
     MOTOR_2 = 2
     MOTOR_3 = 3
     MOTOR_4 = 4
 
-class RGBLedIndex(MotorNumber):
+class RGBLedIndex(IntEnum):
     ALL = 0
     DISABLE = -1
+    MOTOR_1 = 1
+    MOTOR_2 = 2
+    MOTOR_3 = 3
+    MOTOR_4 = 4
 
 
 class SetRGBLedCommand:
@@ -34,7 +38,7 @@ class SetRGBLedCommand:
         self.g = self._to_fix_digit(g)
         self.b = self._to_fix_digit(b)
         self.a = self._to_fix_digit(a)
-        self.index = self._to_fix_digit(index)
+        self.index = RGBLedIndex(self._to_fix_digit(index))
 
     def _to_fix_digit(self, x: Union[int, float]) -> int:
         """
@@ -139,7 +143,7 @@ class DroneRGBLedApi:
         :param b: Blue intensity (0-255).
         :param index: LED index (-1 for disable, 0 for all, 1-4 for specific motors).
         """
-        self.__set_color(r, g, b, index)
+        self.__set_color(r, g, b, RGBLedIndex(index))
 
     def __send_cmd(self, r: int, g: int, b: int, a: int, index: RGBLedIndex):
         """

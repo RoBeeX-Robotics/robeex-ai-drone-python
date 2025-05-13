@@ -1,6 +1,6 @@
 from robeex_ai_drone_api import RobeexAIDrone
 import argparse
-from typing import Union, Literal, get_args
+from typing import Literal, get_args
 import asyncio
 
 Cmd = Literal['land', 'disarm', 'rgb', 'telm']
