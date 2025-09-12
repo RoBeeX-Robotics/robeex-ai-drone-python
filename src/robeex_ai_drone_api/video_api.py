@@ -99,7 +99,7 @@ class UDPVideoStream:
                     cs = cs[0]
                     tcs = pk_sum & 0xFF
                     if cs != tcs:
-                        print(len(data), 'checksum=', cs, '!=', tcs)
+                        # print(len(data), 'checksum=', cs, '!=', tcs)
                         is_ok = False
                     break
                 else:
@@ -111,14 +111,14 @@ class UDPVideoStream:
                 return False, None
 
         if not is_ok or not self._data_is_valid_jpeg(data):
-            print('Invalid JPEG data received')
+            print('[Warning]: Invalid frame data received')
             return False, None
 
         nparr = np.frombuffer(data, np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if frame is None:
-            print('Failed to decode frame')
+            print('[Warning]: Failed to decode frame')
             return False, None
 
         # Calculate FPS

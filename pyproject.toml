@@ -1,6 +1,6 @@
 [project]
 name = "robeex-ai-drone-api"
-version = "0.1.0"
+version = "0.2.2"
 description = "A Python library designed to control and interact with RoBeeX AI Drones"
 authors = [
     {name = "RoBeeX Robotics",email = "robeex.robotics@gmail.com"}
@@ -9,11 +9,19 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "opencv-python (>=4.11.0.86,<5.0.0.0)",
-    "freetype-py (>=2.5.1,<3.0.0)",
-    "cvzone[optional] (>=1.6.1,<2.0.0)",
-    "mediapipe[optional] (>=0.10.21,<0.11.0)"
+    "opencv-python (>=4.11.0.86,<5.0.0.0)"
 ]
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+freetype-py = ">=2.5.1,<3.0.0"
+cvzone = ">=1.6.1,<2.0.0"
+mediapipe = ">=0.10.21,<0.11.0"
+
+[project.urls]
+homepage = "https://robeex.com/?utm_source=pypi"
 
 [tool.poetry]
 packages = [{include = "robeex_ai_drone_api", from = "src"}]
