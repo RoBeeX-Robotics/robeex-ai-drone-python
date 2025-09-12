@@ -1,10 +1,7 @@
-import pickle
-import argparse
 import numpy as np
 import cv2
 from robeex_ai_drone_api import RobeexAIDrone
 from cvzone.HandTrackingModule import HandDetector
-import asyncio
 
 
 REAL_TO_CV_SCALE = 100
@@ -19,7 +16,7 @@ def to_cv_pos(xm, ym):
 
 IS_FLIGHT = True
 
-async def flight():
+def flight():
     # Create an image for visualization.
     img = np.ones((512, 512, 3), dtype=np.uint8) * 255
     w, h, _ = img.shape
@@ -30,11 +27,11 @@ async def flight():
     drone = RobeexAIDrone(drone_ip="172.168.1.128")
 
     if IS_FLIGHT:
-        await drone.rc.nav.disarm()
+        drone.rc.nav.disarm()
         print('connecting ... ')
-        await drone.wait_for_telemetry()
+        drone.wait_for_telemetry()
         print('done')
-        await drone.rc.nav.disarm()
+        drone.rc.nav.disarm()
 
         cv2.imshow(f"Y", img)
         drone.rc.rgb.set_full_color(100, 100, 100)
@@ -42,11 +39,11 @@ async def flight():
         if cv2.waitKey(0) != ord('a'):
             return
         drone.rc.rgb.set_full_color(200, 0, 0)
-        await drone.rc.nav.arm()
+        drone.rc.nav.arm()
         if cv2.waitKey(0) != ord('t'):
             return
         drone.rc.rgb.set_full_color(0, 255, 0)
-        await drone.rc.nav.takeoff(0.5)
+        drone.rc.nav.takeoff(0.5)
 
     drone.rc.rgb.set_full_color(0, 0, 200)
     cap = cv2.VideoCapture(0)
@@ -78,26 +75,26 @@ async def flight():
             drone_pos = (float(xm), 0, float(ym) + 0.5)
             print(drone_pos)
             if IS_FLIGHT:
-                await drone.rc.nav.set_position_3d(*drone_pos)
+                drone.rc.nav.set_position_3d(*drone_pos, wait_until_done=False)
 
         cv2.imshow(f"Y", img)
 
         cv2.imshow(f"frame", frame)
         k = cv2.waitKey(100) & 0xFF
         if k == ord('0'):
-            await drone.rc.nav.disarm()
+            drone.rc.nav.disarm()
             break
         if k == ord('q'):
             break
 
     if IS_FLIGHT:
-        await drone.rc.nav.land()
+        drone.rc.nav.land()
     while cv2.waitKey(0) != ord('q'):
         pass
     cv2.destroyAllWindows()
 
 def main():
-    asyncio.run(flight()) 
+    flight()
 
 if __name__ == "__main__":
     main()

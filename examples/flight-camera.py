@@ -1,6 +1,6 @@
-from robeex_ai_drone_api import RobeexAIDrone, UDPVideoStream, FrameSize
+from robeex_ai_drone_api import RobeexAIDrone, FrameSize
 import cv2
-import asyncio
+from time import sleep
 
 # Initialize the UDP video stream
 drone = RobeexAIDrone(drone_ip="172.168.1.128")
@@ -10,7 +10,7 @@ stream = drone.VideoCapture()
 stream.open(frame_size=FrameSize.SIZE_480x320, jpeg_quality=20)
 
 
-async def main():
+def main():
     try:
         while stream.isOpened():
             success, frame = stream.read()
@@ -22,10 +22,12 @@ async def main():
             fps = stream.get_fps()
             if fps:
                 cv2.putText(frame, f"FPS: {fps:.1f}", (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
             cv2.imshow("UDP Stream", frame)
 
             key = cv2.waitKey(1) & 0xFF
-            await asyncio.sleep(0.01)
+            sleep(0.01)
+
             if key == ord('q'):
                 # Exit on 'q' key press
                 break
@@ -33,45 +35,52 @@ async def main():
                 print('Pressed: ', chr(key), '=>', key)
             if key == ord('1'):
                 drone.rc.rgb.set_full_color(200, 0, 0)
-                asyncio.create_task(drone.rc.nav.disarm())
+                drone.rc.nav.disarm()
             if key == ord('2'):
                 drone.rc.rgb.set_full_color(0, 250, 100)
-                asyncio.create_task(drone.rc.nav.arm())
+                drone.rc.nav.arm()
             if key == ord('9'):
                 drone.rc.rgb.set_full_color(0, 200, 100)
-                asyncio.create_task(drone.rc.nav.takeoff(0.5))
+                drone.rc.nav.takeoff(0.5)
             if key == ord('0'):
                 drone.rc.rgb.set_full_color(50, 0, 255)
-                asyncio.create_task(drone.rc.nav.land())
+                drone.rc.nav.land()
             if key == ord('w'):
                 drone.rc.rgb.set_full_color(0, 0, 0)
                 drone.rc.rgb.set_color_by_motor_number(200, 0, 0, index=1)
                 drone.rc.rgb.set_color_by_motor_number(200, 0, 0, index=2)
-                # asyncio.create_task(drone.rc.nav.go_forward(0.1))
+                drone.rc.nav.go_forward(0.1, wait_until_done=False)
             if key == ord('s'):
                 drone.rc.rgb.set_full_color(0, 0, 0)
                 drone.rc.rgb.set_color_by_motor_number(200, 0, 0, index=3)
                 drone.rc.rgb.set_color_by_motor_number(200, 0, 0, index=4)
-                # asyncio.create_task(drone.rc.nav.go_forward(-0.1))
+                drone.rc.nav.go_forward(-0.1, wait_until_done=False)
             if key == ord('d'):
                 drone.rc.rgb.set_full_color(0, 0, 0)
                 drone.rc.rgb.set_color_by_motor_number(200, 0, 0, index=1)
                 drone.rc.rgb.set_color_by_motor_number(200, 0, 0, index=4)
-                # asyncio.create_task(drone.rc.nav.go_right(0.1))
+                drone.rc.nav.go_right(0.1, wait_until_done=False)
             if key == ord('a'):
                 drone.rc.rgb.set_full_color(0, 0, 0)
                 drone.rc.rgb.set_color_by_motor_number(200, 0, 0, index=2)
                 drone.rc.rgb.set_color_by_motor_number(200, 0, 0, index=3)
-                # asyncio.create_task(drone.rc.nav.go_right(-0.1))
+                drone.rc.nav.go_right(-0.1, wait_until_done=False)
                 # break
 
     except KeyboardInterrupt:
         pass
 
-asyncio.run(main())
 
-print('stopping')
+if __name__ == "__main__":
+    print('wait for telm ...')
+    drone.wait_for_telemetry()
+    print('connecting established !')
 
-# Release the stream
-stream.release()
-cv2.destroyAllWindows()
+    # Run the main function
+    main()
+
+    print('stopping')
+
+    # Release the stream
+    stream.release()
+    cv2.destroyAllWindows()

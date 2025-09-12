@@ -1,7 +1,7 @@
 import math
 import robeex_ai_drone_api
-import asyncio
 from enum import IntFlag
+from time import sleep
 
 class DroneNavMode:
     DISABLE = "DISABLE"
@@ -67,13 +67,14 @@ class DroneNavCommand:
 class DroneNavAPI:
     UPPER_ALT_RANGE = 1.5
 
-    def __init__(self, rc_api):
+    def __init__(self, rc_api, debug = False):
         """
         Initializes the Offboard Navigation API.
 
         :param rc_api: An instance of RcAPI for sending commands.
         """
         self.rc_api: robeex_ai_drone_api.RcApi = rc_api
+        self.debug = debug
         self.offboard_state = DroneNavState()
 
     def __send_cmd(self, roll=0, pitch=0, thrust=-500, yaw=0, arm=False, fmode=DroneNavMode.DISABLE):
@@ -106,7 +107,8 @@ class DroneNavAPI:
         """
         for key, value in kwargs.items():
             if hasattr(self.offboard_state, key):
-                print(key, '=', value)
+                if self.debug:
+                    print(key, '=', value)
                 setattr(self.offboard_state, key, value)
             else:
                 raise AttributeError(f"Invalid attribute: {key}")
@@ -123,118 +125,138 @@ class DroneNavAPI:
             fmode=flight_mode,
         )
 
-    async def set_mode(self):
+    def set_mode(self):
         """
         Sets the drone to the DISABLE mode.
         """
         self.update_offboard_state(mode=DroneNavMode.DISABLE)
 
-    async def arm(self):
+    def arm(self):
         """
         Arms the drone and sets it to the READY_TO_FLY mode.
         """
         self.update_offboard_state(mode=DroneNavMode.READY_TO_FLY)
 
-    async def disarm(self):
+    def disarm(self):
         """
         Disarms the drone and disables offboard mode.
         """
         self.update_offboard_state(mode=DroneNavMode.DISABLE)
 
-    async def kill(self):
+    def kill(self):
         """
         Sends the drone into FAILSAFE mode.
         """
         self.update_offboard_state(mode=DroneNavMode.FAILSAFE)
 
-    async def takeoff(self, altitude_meter: float, tolerance: float = 0.1):
+    def takeoff(self, altitude_meter: float, tolerance: float = 0.1, wait_until_done: bool = True):
         """
         Commands the drone to take off to a specified altitude.
 
         :param altitude_meter: The target altitude in meters.
         :param tolerance: The altitude tolerance in meters.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.TAKEOFF, z=altitude_meter)
-        await self.wait_for_latest_setpoint(tolerance, ignore_axis=IgnoreAxis.X | IgnoreAxis.Y | IgnoreAxis.YAW)
+        if wait_until_done:
+            self.wait_for_latest_setpoint(tolerance, ignore_axis=IgnoreAxis.X | IgnoreAxis.Y | IgnoreAxis.YAW)
 
-    async def land(self):
+    def land(self, wait_until_done: bool = True):
         """
         Commands the drone to land by setting the altitude to 0.
+
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.LAND, z=0)
-        await self.wait_for_latest_setpoint(0.1, ignore_axis=IgnoreAxis.X | IgnoreAxis.Y | IgnoreAxis.YAW)
+        if wait_until_done:
+            self.wait_for_latest_setpoint(0.1, ignore_axis=IgnoreAxis.X | IgnoreAxis.Y | IgnoreAxis.YAW)
 
-    async def go_forward(self, meter: float):
+    def go_forward(self, meter: float, wait_until_done: bool = True):
         """
         Moves the drone forward by a specified distance.
 
         :param meter: The distance to move forward in meters.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.MOVE, y=self.offboard_state.y + meter)
-        await self.wait_for_latest_setpoint()
+        if wait_until_done:
+            self.wait_for_latest_setpoint()
 
-    async def go_right(self, meter: float):
+    def go_right(self, meter: float, wait_until_done: bool = True):
         """
         Moves the drone to the right by a specified distance.
 
         :param meter: The distance to move right in meters.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.MOVE, x=self.offboard_state.x + meter)
-        await self.wait_for_latest_setpoint()
+        if wait_until_done:
+            self.wait_for_latest_setpoint()
 
-    async def set_yaw(self, yaw_in_rad: float):
+    def set_yaw(self, yaw_in_rad: float, wait_until_done: bool = True):
         """
         Sets the drone's yaw to a specific angle.
 
         :param yaw_in_rad: The target yaw angle in radians.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.MOVE, wz=yaw_in_rad)
-        await self.wait_for_latest_setpoint(
-            POSITION_SETPOINT_DEADZONE, self.YAW_SETPOINT_DEADZONE_RAD
-        )
+        if wait_until_done:
+            self.wait_for_latest_setpoint(
+                POSITION_SETPOINT_DEADZONE, YAW_SETPOINT_DEADZONE_RAD
+            )
 
-    async def turn_cw(self, rotation_in_rad: float):
+    def turn_cw(self, rotation_in_rad: float, wait_until_done: bool = True):
         """
         Rotates the drone clockwise by a specified angle.
 
         :param rotation_in_rad: The angle to rotate in radians.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.MOVE, wz=self.offboard_state.wz + rotation_in_rad)
-        await self.wait_for_latest_setpoint(
-            POSITION_SETPOINT_DEADZONE, self.YAW_SETPOINT_DEADZONE_RAD
-        )
+        if wait_until_done:
+            self.wait_for_latest_setpoint(
+                POSITION_SETPOINT_DEADZONE, YAW_SETPOINT_DEADZONE_RAD
+            )
 
-    async def set_position_2d(self, x_m: float, y_m: float):
+    def set_position_2d(self, x_m: float, y_m: float, wait_until_done: bool = True):
         """
         Sets the drone's position to specific coordinates.
 
         :param x_m: The target X coordinate in meters.
         :param y_m: The target Y coordinate in meters.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.MOVE, x=x_m, y=y_m)
-        await self.wait_for_latest_setpoint()
+        if wait_until_done:
+            self.wait_for_latest_setpoint(ignore_axis=IgnoreAxis.YAW)
 
-    async def set_position_3d(self, x_m: float, y_m: float, z_m: float):
+    def set_position_3d(self, x_m: float, y_m: float, z_m: float, wait_until_done: bool = True):
         """
         Sets the drone's position to specific coordinates.
 
         :param x_m: The target X coordinate in meters.
         :param y_m: The target Y coordinate in meters.
         :param z_m: The target Z coordinate in meters.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.MOVE, x=x_m, y=y_m, z=z_m)
-        # await self.wait_for_latest_setpoint()
+        if wait_until_done:
+            # self.wait_for_latest_setpoint()
+            self.wait_for_latest_setpoint(ignore_axis=IgnoreAxis.YAW)
 
-    async def set_altitude(self, altitude_meter: float):
+    def set_altitude(self, altitude_meter: float, wait_until_done: bool = True):
         """
         Sets the drone's altitude to a specific value.
 
         :param altitude_meter: The target altitude in meters.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
         """
         self.update_offboard_state(mode=DroneNavMode.MOVE, z=altitude_meter)
-        await self.wait_for_latest_setpoint()
+        if wait_until_done:
+            self.wait_for_latest_setpoint()
 
-    async def wait_for_latest_setpoint(self, pos_tolerance: float = POSITION_SETPOINT_DEADZONE, yaw_tolerance: float = YAW_SETPOINT_DEADZONE_RAD, ignore_axis: IgnoreAxis = IgnoreAxis.NONE):
+    def wait_for_latest_setpoint(self, pos_tolerance: float = POSITION_SETPOINT_DEADZONE, yaw_tolerance: float = YAW_SETPOINT_DEADZONE_RAD, ignore_axis: IgnoreAxis = IgnoreAxis.NONE):
         """
         Waits for the drone to reach the setpoint within the specified tolerances.
 
@@ -243,7 +265,7 @@ class DroneNavAPI:
         :param ignore_axis: Axes to ignore during setpoint checks (bit mask).
         """
         while True:
-            telemetry = await self.rc_api.get_next_telemetry_update()
+            telemetry = self.rc_api.get_next_telemetry_update()
 
             pos_err = 0
             if not (ignore_axis & IgnoreAxis.X):
@@ -256,10 +278,11 @@ class DroneNavAPI:
 
             yaw_err = 0 if (ignore_axis & IgnoreAxis.YAW) else abs(telemetry.wz - self.offboard_state.wz)
 
-            print('wait', 'pos err:', pos_err, 'yaw err:', yaw_err)
-            print(self.offboard_state.z, '==', telemetry.z)
+            if self.debug:
+                print('wait', 'pos err:', pos_err, 'yaw err:', yaw_err)
+                print(self.offboard_state.z, '==', telemetry.z)
 
             if pos_err < pos_tolerance and yaw_err < yaw_tolerance:
                 break
 
-            await asyncio.sleep(0.1)
+            sleep(0.1)

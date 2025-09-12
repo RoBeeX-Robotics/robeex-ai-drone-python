@@ -13,6 +13,7 @@ class FrameSize(Enum):
     SIZE_480x320 = 7
     SIZE_400x296 = 6
     SIZE_320x240 = 5
+    SIZE_LSQ = 4
 
 
 class UDPVideoStream:

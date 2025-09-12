@@ -1,6 +1,5 @@
 import socket
 import threading
-import asyncio
 import json
 from robeex_ai_drone_api import DroneNavAPI, DroneRGBLedApi
 
@@ -20,9 +19,10 @@ class DroneTelemetry:
         return f"[x={self.x}, y={self.y}, z={self.z}, wz={self.wz}, battery={self.battery}, is_armed={self.is_armed}, roll={self.roll}, pitch={self.pitch}, distance={self.distance}]"
 
 class RcApi:
-    def __init__(self, drone_ip, drone_port):
+    def __init__(self, drone_ip, drone_port, debug = False):
         self.drone_ip = drone_ip
         self.drone_port = drone_port
+        self.debug = debug
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(1.0)  # Set a timeout for socket operations
 
@@ -33,7 +33,7 @@ class RcApi:
         self.nav = DroneNavAPI(self)  # Initialize the navigation API
         self.rgb = DroneRGBLedApi(self)  # Initialize the navigation API
 
-        self.telemetry_data: DroneTelemetry = None  # Explicitly use DroneTelemetry as the data type
+        self.telemetry_data: DroneTelemetry  # Explicitly use DroneTelemetry as the data type
         self._stop_event = threading.Event()
         self._telemetry_thread = threading.Thread(target=self._telemetry_rx_thread, daemon=True)
         self._is_running = False  # Flag to prevent multiple starts
@@ -62,7 +62,7 @@ class RcApi:
         try:
             s = json.dumps(command).encode()
             addr = (self.drone_ip, self.drone_port)
-            print(s, addr)
+            # print(s, addr)
             self.sock.sendto(s, addr)
         except Exception as e:
             print(f"Error sending command: {e}")
@@ -103,8 +103,9 @@ class RcApi:
                 print(f"Error receiving telemetry: {e}")
                 break
 
-    async def get_next_telemetry_update(self):
+    def get_next_telemetry_update(self):
         """Wait for the telemetry thread to update telemetry data and return the value."""
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self._telemetry_event.wait)  # Wait for the event to be set
+        self._telemetry_event.wait()
+        # loop = asyncio.get_event_loop()
+        # await loop.run_in_executor(None, self._telemetry_event.wait)  # Wait for the event to be set
         return self.telemetry_data
