@@ -9,19 +9,20 @@ The **RoBeeX AI Drone Python API** is a Python library designed to control and i
 
 Website: https://robeex.com/
 
-## Features  
+# Features  
 
 - **Navigation API**: Control drone movement, takeoff, landing, and position setting.  
 - **RGB LED API**: Customize LED colors and brightness for individual motors or all LEDs.  
 - **Video Streaming**: Stream live video from the drone's camera using UDP.  
 - **Telemetry**: Retrieve real-time telemetry data such as position, altitude, battery status, and more.  
 
-## Installation  
+# Installation  
 
 ### Install using pip
-    ```bash  
-    pip install robeex-ai-drone-api
-    ```  
+
+```bash  
+pip install robeex-ai-drone-api
+```  
 
 ### From source
 
@@ -36,7 +37,7 @@ Website: https://robeex.com/
     pip install .
     ```  
 
-## Usage  
+# Usage  
 
 ### Example: Basic Flight  
 
@@ -70,7 +71,7 @@ drone.rc.rgb.set_full_color(255, 0, 0)  # Set all LEDs to red
 
 Explore additional examples in the [`examples/`](./examples/) directory to learn more about the capabilities of the API.  
 
-## Project Structure  
+# Project Structure  
 
 ```plaintext  
 robeex-ai-drone-python/  
@@ -89,14 +90,14 @@ robeex-ai-drone-python/
 │   └── robeex_ai_drone_api
 ```  
 
-## License  
+# License  
 
 This project is licensed under the MIT License.  
 
-## Authors  
+# Authors  
 
 - **RoBeeX Robotics** - [robeex.robotics@gmail.com](mailto:robeex.robotics@gmail.com)  
 
-## Contributing  
+# Contributing  
 
 Contributions are welcome! Feel free to submit issues or pull requests.  
