@@ -1,3 +1,4 @@
+import sys
 import cv2
 import numpy as np
 import socket
@@ -35,6 +36,9 @@ class UDPVideoStream:
         self.fps = None
         self.last_time = time()
 
+    def __del__(self):
+        self.release()
+
     def open(self, frame_size: FrameSize = FrameSize.SIZE_640x480, jpeg_quality: int = 45):
         """
         Opens the UDP socket and starts the stream.
@@ -48,7 +52,10 @@ class UDPVideoStream:
             raise ValueError("JPEG quality must be between 0 and 100.")
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        if sys.platform.startswith("win") and not hasattr(socket, "SO_REUSEPORT"):
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        else:
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.settimeout(self.timeout)
         self.sock.bind(('', self.port))
@@ -107,7 +114,6 @@ class UDPVideoStream:
                     data += chunk
             except Exception as e:
                 print('Error:', e)
-                self.sock.sendto(b"stop", (self.host, self.port))
                 return False, None
 
         if not is_ok or not self._data_is_valid_jpeg(data):
