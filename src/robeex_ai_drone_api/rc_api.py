@@ -1,3 +1,4 @@
+import sys
 import socket
 import threading
 import json
@@ -26,7 +27,10 @@ class RcApi:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(1.0)  # Set a timeout for socket operations
 
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        if sys.platform.startswith("win") and not hasattr(socket, "SO_REUSEPORT"):
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        else:
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind(('', drone_port))
 
