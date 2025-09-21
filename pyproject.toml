@@ -1,6 +1,6 @@
 [project]
 name = "robeex-ai-drone-api"
-version = "0.2.3"
+version = "0.2.4"
 description = "A Python library designed to control and interact with RoBeeX AI Drones"
 authors = [
     {name = "RoBeeX Robotics",email = "robeex.robotics@gmail.com"}
