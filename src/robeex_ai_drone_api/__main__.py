@@ -1,7 +1,6 @@
 from robeex_ai_drone_api import RobeexAIDrone
 import argparse
 from typing import Literal, get_args
-import asyncio
 
 Cmd = Literal['land', 'disarm', 'rgb', 'telm']
 
@@ -13,16 +12,16 @@ def parse_args():
     parser.add_argument("-ip", help="drone ip", default="172.168.1.128")
     return parser.parse_args()
 
-async def handle_cmd(robeex: RobeexAIDrone, cmd: Cmd):
+def handle_cmd(robeex: RobeexAIDrone, cmd: Cmd):
     match cmd:
         case 'disarm':
-            await robeex.rc.nav.disarm()
+            robeex.rc.nav.disarm()
         case 'land':
-            await robeex.rc.nav.land()
+            robeex.rc.nav.land()
         case 'rgb':
-            await robeex.rc.rgb.set_full_color(255, 0, 0)
+            robeex.rc.rgb.set_full_color(255, 0, 0)
         case 'telm':
-            print(await robeex.rc.get_next_telemetry_update())
+            print(robeex.rc.get_next_telemetry_update())
 
 def main():
     args = parse_args()
@@ -30,7 +29,7 @@ def main():
     robeex = RobeexAIDrone(drone_ip=args.ip)
 
     cmd: Cmd = args.cmd
-    asyncio.run(handle_cmd(robeex, cmd))
+    handle_cmd(robeex, cmd)
 
 if __name__ == '__main__':
     main()

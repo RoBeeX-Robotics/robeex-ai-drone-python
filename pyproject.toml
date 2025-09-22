@@ -1,6 +1,6 @@
 [project]
 name = "robeex-ai-drone-api"
-version = "0.2.4"
+version = "0.2.5"
 description = "A Python library designed to control and interact with RoBeeX AI Drones"
 authors = [
     {name = "RoBeeX Robotics",email = "robeex.robotics@gmail.com"}
@@ -8,9 +8,7 @@ authors = [
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "opencv-python (>=4.11.0.86,<5.0.0.0)"
-]
+dependencies = []
 
 [tool.poetry.group.dev]
 optional = true

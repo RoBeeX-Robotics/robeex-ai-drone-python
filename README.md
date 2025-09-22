@@ -18,11 +18,18 @@ Website: https://robeex.com/
 
 # Installation  
 
+### Requirements
+
+Before using the library you should install OpenCV
+```bash
+pip install opencv-python
+```
+
 ### Install using pip
 
-```bash  
+```bash 
 pip install robeex-ai-drone-api
-```  
+```
 
 ### From source
 
