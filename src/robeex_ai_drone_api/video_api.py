@@ -18,7 +18,7 @@ class FrameSize(Enum):
 
 
 class UDPVideoStream:
-    def __init__(self, host: str, port: int, chunk_size: int = 1324, timeout: int = 2):
+    def __init__(self, host: str, port: int, chunk_size: int = 1324, timeout: int = 2, debug = False):
         """
         Initializes the UDP video stream.
 
@@ -35,6 +35,7 @@ class UDPVideoStream:
         self.is_streaming = False
         self.fps = None
         self.last_time = time()
+        self.debug = debug
 
     def __del__(self):
         self.release()
@@ -117,14 +118,16 @@ class UDPVideoStream:
                 return False, None
 
         if not is_ok or not self._data_is_valid_jpeg(data):
-            print('[Warning]: Invalid frame data received')
+            if self.debug:
+                print('[Warning]: Invalid frame data received')
             return False, None
 
         nparr = np.frombuffer(data, np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if frame is None:
-            print('[Warning]: Failed to decode frame')
+            if self.debug:
+                print('[Warning]: Failed to decode frame')
             return False, None
 
         # Calculate FPS

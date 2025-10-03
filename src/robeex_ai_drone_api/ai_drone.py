@@ -10,7 +10,7 @@ class RobeexAIDrone:
         #     raise ValueError("UUID must be a 6-digit hexadecimal string.")
         self.uuid = uuid
         self.rc = RcApi(drone_ip, drone_port=8585, debug=debug)  # Updated to include IP and port
-        self.VideoCapture = lambda : UDPVideoStream(drone_ip, port=1234)  # Updated to include IP and port
+        self.VideoCapture = lambda : UDPVideoStream(drone_ip, port=1234, debug=debug)  # Updated to include IP and port
         self.rc.start()
 
     def wait_for_telemetry(self):
