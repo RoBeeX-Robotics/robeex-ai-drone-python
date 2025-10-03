@@ -2,6 +2,7 @@ import math
 import robeex_ai_drone_api
 from enum import IntFlag
 from time import sleep
+from .vec2 import Vec2
 
 class DroneNavMode:
     DISABLE = "DISABLE"
@@ -178,9 +179,21 @@ class DroneNavAPI:
         :param meter: The distance to move forward in meters.
         :param wait_until_done: Whether to wait until the setpoint is reached.
         """
-        self.update_offboard_state(mode=DroneNavMode.MOVE, y=self.offboard_state.y + meter)
+        body_frame_move_vec = Vec2(0, meter)
+        world_frame_move_vec = body_frame_move_vec.rotate(-self.offboard_state.wz)
+
+        self.update_offboard_state(mode=DroneNavMode.MOVE, x=self.offboard_state.x + world_frame_move_vec.x, y=self.offboard_state.y + world_frame_move_vec.y)
         if wait_until_done:
             self.wait_for_latest_setpoint()
+
+    def go_backward(self, meter: float, wait_until_done: bool = True):
+        """
+        Moves the drone backward by a specified distance.
+
+        :param meter: The distance to move backward in meters.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
+        """
+        self.go_forward(-meter, wait_until_done)
 
     def go_right(self, meter: float, wait_until_done: bool = True):
         """
@@ -189,9 +202,21 @@ class DroneNavAPI:
         :param meter: The distance to move right in meters.
         :param wait_until_done: Whether to wait until the setpoint is reached.
         """
-        self.update_offboard_state(mode=DroneNavMode.MOVE, x=self.offboard_state.x + meter)
+        body_frame_move_vec = Vec2(meter, 0)
+        world_frame_move_vec = body_frame_move_vec.rotate(-self.offboard_state.wz)
+
+        self.update_offboard_state(mode=DroneNavMode.MOVE, x=self.offboard_state.x + world_frame_move_vec.x, y=self.offboard_state.y + world_frame_move_vec.y)
         if wait_until_done:
             self.wait_for_latest_setpoint()
+
+    def go_left(self, meter: float, wait_until_done: bool = True):
+        """
+        Moves the drone to the left by a specified distance.
+
+        :param meter: The distance to move left in meters.
+        :param wait_until_done: Whether to wait until the setpoint is reached.
+        """
+        self.go_right(-meter, wait_until_done)
 
     def set_yaw(self, yaw_in_rad: float, wait_until_done: bool = True):
         """
