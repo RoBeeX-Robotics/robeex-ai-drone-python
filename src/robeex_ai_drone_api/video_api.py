@@ -49,8 +49,8 @@ class UDPVideoStream:
         """
         if not isinstance(frame_size, FrameSize):
             raise ValueError(f"Invalid frame size. Use a value from the FrameSize enum.")
-        if not (0 <= jpeg_quality <= 100):
-            raise ValueError("JPEG quality must be between 0 and 100.")
+        if not (5 <= jpeg_quality <= 63):
+            raise ValueError("JPEG quality must be between 5 and 63 (inclusive).")
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if sys.platform.startswith("win") and not hasattr(socket, "SO_REUSEPORT"):
